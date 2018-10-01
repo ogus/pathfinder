@@ -1,0 +1,17 @@
+{
+  "name": "pathfinder",
+  "version": "1.0.0",
+  "description": "A collection of common pathfinding algorithms",
+  "scripts": {
+    "build": "terser src/pathfinder.js -c -m reserved=['Pathfinder'] > src/pathfinder.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ogus/pathfinder.git"
+  },
+  "author": "Ogus",
+  "license": "ISC",
+  "devDependencies": {
+    "terser": "^3.9.2"
+  }
+}
