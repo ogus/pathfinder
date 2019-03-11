@@ -1,17 +1,30 @@
 {
   "name": "pathfinder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A collection of common pathfinding algorithms",
+  "author": "Ogus",
+  "license": "WTFPL",
+  "main": "src/pathfinder.js",
   "scripts": {
-    "build": "terser src/pathfinder.js -c -m reserved=['Pathfinder'] > src/pathfinder.min.js"
+    "test": "node test/test.js | faucet",
+    "build": "uglifyjs src/pathfinder.js -c -m reserved=['Pathfinder'] -o src/pathfinder.min.js"
   },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "^4.10.1",
+    "uglify-js": "^3.4.9"
+  },
+  "keywords": [
+    "pathfinding",
+    "astar",
+    "dijkstra",
+    "bfs",
+    "game-ai",
+    "planning"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ogus/pathfinder.git"
   },
-  "author": "Ogus",
-  "license": "ISC",
-  "devDependencies": {
-    "terser": "^3.9.2"
-  }
+  "homepage": "https://github.com/ogus/pathfinder#readme"
 }

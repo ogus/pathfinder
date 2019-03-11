@@ -4,14 +4,13 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="Author" content="Ogus">
-	<meta name="Description" content="implementation of the most common pathfinding
-	algorithms in Javascript">
+	<meta name="Description" content="A collection of common pathfinding algorithms in Javascript">
 	<link rel="stylesheet" href="https://unpkg.com/picnic">
 
-	<script type="text/javascript" src="../src/pathfinder.min.js"></script>
-	<script type="text/javascript" src="demo.js" defer></script>
+	<script type="text/javascript" src="../src/pathfinder.js"></script>
+	<script type="text/javascript" src="example.js" defer></script>
 
-	<title>Pathfinding - Demo</title>
+	<title>Pathfinding - Demonstration</title>
 </head>
 
 <body>
@@ -22,27 +21,26 @@
     </div>
   </nav>
 
-	<div class="flex one center" style="padding:60px 10px 10px">
+	<div class="flex twelve center" style="padding-top:60px">
 
-		<div class="four-fifth three-fifth-400 two-fifth-800 fifth-1200">
-			<form class="flex two grow" id="method_list">
+		<div class="fifth-1200 two-fifth-800 three-fifth">
+			<form class="flex two grow">
 				<h3>Method</h3>
 				<label class="full">
-					<input type="radio" name="search_method" value="bfs" id="bfs" checked><span class="checkable">Breadth First Search</span>
+					<input type="radio" name="search_method" value="bfs" checked><span class="checkable">Breadth First Search</span>
 				</label>
 				<label class="full">
-					<input type="radio" name="search_method" value="greedy" id="greedy"><span class="checkable">Greedy Best-First Search</span>
+					<input type="radio" name="search_method" value="greedy"><span class="checkable">Greedy Best-First Search</span>
 				</label>
 				<label class="full">
-					<input type="radio" name="search_method" value="dijkstra" id="dijkstra"><span class="checkable">Dijkstra Algorithm</span>
+					<input type="radio" name="search_method" value="dijkstra"><span class="checkable">Dijkstra Algorithm</span>
 				</label>
 				<label class="full">
-					<input type="radio" name="search_method" value="astar" id="astar"><span class="checkable">A* Algorithm</span>
+					<input type="radio" name="search_method" value="astar"><span class="checkable">A* Algorithm</span>
 				</label>
 			</form>
 
-
-			<form class="flex one grow" id="map_tools">
+			<form class="flex two grow">
 				<h3>Map Tool</h3>
 				<label class="full">
 					<input type="radio" name="map_tool" value="0" id="empty_tile"><span class="checkable">Grass Tile</span>
@@ -56,17 +54,10 @@
 			</form>
 		</div>
 
-		<div class="full four-fifth-800">
-      <div class="flex two center">
-        <div class="full four-fifth-800 three-fifth-1200">
-            <canvas id="canvas" style="width: 100%; height: auto; cursor: pointer"></canvas>
-        </div>
-        <div class="full four-fifth-800 three-fifth-1200">
-					<div id="info">
-						<p></p><p></p><p></p>
-					</div>
-      </div>
+		<div class="three-fifth-1200 four-fifth">
+    	<canvas id="canvas" style="width: 100%; height: auto; cursor: pointer"></canvas>
     </div>
+
 	</div>
 
 	<div class="modal">
@@ -80,7 +71,6 @@
 	      <p>Nothing to display currently</p>
 	    </section>
 			<footer>
-				<!-- <label for="modal_info" class="button dangerous">Close</label> -->
 			</footer>
 		</div>
 	</div>
