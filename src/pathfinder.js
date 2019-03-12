@@ -381,13 +381,6 @@
       }
     },
 
-    searchAsync: function (type, graph, startNode, endNode, heuristic) {
-      return new Promise(function(resolve, reject) {
-        var result = Pathfinder.seatch(type, graph, startNode, endNode, heuristic);
-        resolve(result);
-      });
-    },
-
     Instance: function (graph, heuristic) {
       this.graph = graph;
       this.heuristic = heuristic;
@@ -421,13 +414,6 @@
           default:
             return null;
         }
-      },
-
-      this.searchAsync = function (type, startNode, endNode) {
-        return new Promise(function(resolve, reject) {
-          var result = this.search(type, startNode, endNode);
-          resolve(result);
-        }.bind(this));
       }
     },
 
