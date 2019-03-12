@@ -5,32 +5,28 @@
 }(this, function () {
   'use strict';
 
-  var Queue = function (data, compare) {
-    this.data = (typeof data !== 'undefined') ? data : [];
-    this.compare = (typeof compare == 'function') ? compare : function (a, b) {
-      return b - a;
+  // Priority queue structure used for border expansion during pathfinding
+  var Border = function () {
+    this.data = [];
+    this.compare = function (a, b) {
+      return b.score - a.score;
     };
-    if (this.data.length > 0) {
-      for (var i = (this.data.length >> 1) - 1; i >= 0; i--) {
-        this._down(i);
-      }
-    }
   }
 
-  Queue.prototype = {
+  Border.prototype = {
     _up: function (idx) {
       var item = this.data[idx];
       var parent = null, current = null;
       while (idx > 0) {
         parent = (idx - 1) >> 1;
         current = this.data[parent];
-        if (this.compare(item, current) >= 0) {
+        if (this.compare(item, current) < 0) {
           break;
         }
-        data[idx] = current;
+        this.data[idx] = current;
         idx = parent;
       }
-      data[idx] = item;
+      this.data[idx] = item;
     },
 
     _down: function (idx) {
@@ -40,22 +36,23 @@
       while (idx < half) {
         left = (idx << 1) + 1;
         right = left + 1;
-        best = data[left];
-        if (right < this.data.length && this.compare(data[right], best) < 0) {
+        best = this.data[left];
+        if (right < this.data.length && this.compare(this.data[right], best) > 0) {
           left = right;
-          best = data[right];
+          best = this.data[right];
         }
-        if (this.compare(best, item) >= 0) {
+        if (this.compare(best, item) < 0) {
           break;
         }
-        data[idx] = best;
+        this.data[idx] = best;
         idx = left;
       }
-      data[idx] = item;
+      this.data[idx] = item;
     },
 
-    push: function (item) {
-      this.data.push(item);
+    push: function (node, score) {
+      score = (typeof score != 'undefined') ? score : 0;
+      this.data.push({node: node, score: score});
       this._up(this.data.length - 1);
     },
 
@@ -69,7 +66,7 @@
         this.data[0] = bottom;
         this._down(0);
       }
-      return top;
+      return top.node;
     },
 
     length: function () {
@@ -77,99 +74,34 @@
     }
   };
 
-  // function BinaryHeap(scoreFunction) {
-  //   this.data = [];
-  //   this.score = scoreFunction;
-  // }
-  //
-  // BinaryHeap.prototype = {
-  //   length: function () {
-  //     return this.data.length;
-  //   },
-  //
-  //   push: function (e) {
-  //     this.data.push(e);
-  //     this.sinkDown(this.data.length - 1);
-  //   },
-  //
-  //   pop: function () {
-  //     var result = this.data[0];
-  //     var end = this.data.pop();
-  //     if (this.data.length > 0) {
-  //       this.data[0] = end;
-  //       this.bubbleUp(0);
-  //     }
-  //     return result;
-  //   },
-  //
-  //   sinkDown: function (n) {
-  //     var element = this.data[n];
-  //     var score = this.score(element);
-  //     var idx = 0, parent = null;
-  //     while (n > 0) {
-  //       idx = ((n + 1) >> 1) - 1;
-  //       parent = this.data[idx];
-  //       if (score < this.score(parent)) {
-  //         this.data[idx] = element;
-  //         this.data[n] = parent;
-  //         n = idx;
-  //       }
-  //       else {
-  //         break;
-  //       }
-  //     }
-  //   },
-  //
-  //   bubbleUp: function (n) {
-  //     var element = this.data[n];
-  //     var score = this.score(element);
-  //     var idx1, idx2, child, child_score = 0, swap = null;
-  //     while (true) {
-  //       idx2 = (n + 1) << 1;
-  //       idx1 = idx2 - 1;
-  //       swap = null;
-  //       if (idx1 < this.data.length) {
-  //         child_score = this.score(this.data[idx1]);
-  //         if (child_score < score) {
-  //           swap = idx1;
-  //         }
-  //       }
-  //       if (idx2 < this.data.length) {
-  //         if (this.score(this.data[idx2]) < (swap === null ? score : child_score)) {
-  //           swap = idx2;
-  //         }
-  //       }
-  //       if (swap !== null) {
-  //         this.data[n] = this.data[swap];
-  //         this.data[swap] = element;
-  //         n = swap;
-  //       }
-  //       else {
-  //         break;
-  //       }
-  //     }
-  //   }
-  // };
-
-  var Path = function (startNode) {
+  // Graph-like structure to keep track of nodes links and costs during pathfinding
+  var Path = function () {
     this.nodes = [];
+    this.costs = {};
     this.links = {};
   }
 
   Path.prototype = {
-    init: function (startNode) {
+    start: function (startNode) {
       this.nodes.push(startNode);
       this.links[0] = null;
+      this.costs[0] = 0;
     },
 
-    link: function (currentNode, nextNode) {
+    link: function (currentNode, nextNode, cost) {
       if (!this.contains(currentNode)) {
         this.nodes.push(currentNode);
       }
       if (!this.contains(nextNode)) {
         this.nodes.push(nextNode);
       }
-      this.links[this.nodes.indexOf(nextNode)] = this.nodes.indexOf(currentNode);
+      var nextIndex = this.nodes.indexOf(nextNode);
+      this.links[nextIndex] = this.nodes.indexOf(currentNode);
+      this.costs[nextIndex] = (typeof cost != 'undefined') ? cost : 0;
+    },
+
+    cost: function (node) {
+      return this.contains(node) ? this.costs[this.nodes.indexOf(node)] : 0;
     },
 
     contains: function (node) {
@@ -189,8 +121,10 @@
       result.reverse();
       return result;
     }
-  }
+  };
 
+
+  // Graph structure, to store nodes data and adjacency properties
   var Graph = function () {
     this.nodes = [];
     this.edges = {};
@@ -238,9 +172,10 @@
 
     getCost: function (node1, node2) {
       if (this.hasNode(node1) && this.hasNode(node2)) {
-        var edge = this.edges[this.getNodeId(node1)];
-        if (edge.hasOwnProperty(this.getNodeId(node1))) {
-          return edge[node2];
+        var idx1 = this.getNodeId(node1);
+        var idx2 = this.getNodeId(node2)
+        if (this.edges[idx1].hasOwnProperty(idx2)) {
+          return this.edges[idx1][idx2];
         }
       }
       return null;
@@ -278,11 +213,8 @@
    */
   function bfs(graph, startNode, endNode) {
     var path = new Path();
+    path.start(startNode);
     var border = new Array();
-    if (!startNode || !endNode) {
-      return path.export();
-    }
-    path.init(startNode);
     border.push(startNode);
     var currentNode = null, nextNode = null, adjacentNodes = null;
     while (border.length > 0) {
@@ -314,40 +246,27 @@
    * @param heuristic A function that compute the proximity of two nodes
    */
   function bfsGreedy(graph, startNode, endNode, heuristic) {
-    if (!startNode || !endNode) {
-      return createPath(null);
-    }
-    var path = {};
-    path[startNode] = null;
-    // var border = new BinaryHeap(function (e) {
-    //   return e.score;
-    // });
-    var border = new Queue([], function (a, b) {
-      return b.score - a.score;
-    });
-    border.push({
-      node: startNode,
-      score: 0
-    });
+    var path = new Path();
+    path.start(startNode);
+    var border = new Border();
+    border.push(startNode);
     var currentNode = null, nextNode = null, adjacentNodes = null;
     while (border.length() > 0) {
       currentNode = border.pop();
       if (currentNode === endNode) {
-        return createPath(path, startNode, endNode);
+        return path.export(endNode);
       }
       adjacentNodes = graph.getAdjacentNodes(currentNode);
       for (var i = 0; i < adjacentNodes.length; i++) {
         nextNode = adjacentNodes[i];
-        if (!path.hasOwnProperty(nextNode)) {
-          path[nextNode] = currentNode;
-          border.push({
-            node: nextNode,
-            score: heuristic(nextNode, endNode)
-          });
+        if (!path.contains(nextNode)) {
+          var h = heuristic(nextNode, endNode);
+          path.link(currentNode, nextNode);
+          border.push(nextNode, h);
         }
       }
     }
-    return createPath(path, startNode, currentNode);
+    return path.export(currentNode);
   };
 
   /**
@@ -362,49 +281,32 @@
    * @param endNode A node from the graph
    */
   function dijkstra(graph, startNode, endNode) {
-    if (!startNode || !endNode) {
-      return createPath(null);
-    }
-    var path = {};
-    path[startNode] = null;
-    var pathCost = {};
-    pathCost[startNode] = 0;
-    // var border = new BinaryHeap(function (e) {
-    //   return e.score;
-    // });
-    var border = new Queue([], function (a, b) {
-      return b.score - a.score;
-    });
-    border.push({
-      node: startNode,
-      score: 0
-    });
+    var path = new Path();
+    path.start(startNode);
+    var border = new Border();
+    border.push(startNode);
     var currentNode = null, nextNode = null, adjacentNodes = null;
     var newCost = 0;
     while (border.length() > 0) {
       currentNode = border.pop();
       if (currentNode === endNode) {
-        return createPath(path, startNode, endNode);
+        return path.export(endNode);
       }
       adjacentNodes = graph.getAdjacentNodes(currentNode);
       for (var i = 0; i < adjacentNodes.length; i++) {
         nextNode = adjacentNodes[i];
-        newCost = pathCost[currentNode] + graph.getCost(currentNode, nextNode);
-        if (!path.hasOwnProperty(nextNode) || newCost < pathCost[nextNode]) {
-          path[nextNode] = currentNode;
-          pathCost[nextNode] = newCost
-          border.push({
-            node: nextNode,
-            score: newCost
-          });
+        newCost = path.cost(currentNode) + graph.getCost(currentNode, nextNode);
+        if (!path.contains(nextNode) || newCost < path.cost(nextNode)) {
+          path.link(currentNode, nextNode, newCost);
+          border.push(nextNode, newCost);
         }
       }
     }
-    return createPath(path, startNode, currentNode);
+    return path.export(currentNode);
   };
 
   /**
-   * A* algorithm
+   * A-star algorithm
    *
    * The algorithm is a combination of the Dijkstra algorithm
    * and the Greedy Best First Search algorithm.
@@ -417,71 +319,34 @@
    * @param heuristic A function that compute the proximity of two nodes
    */
   function astar(graph, startNode, endNode, heuristic) {
-    if (!startNode || !endNode) {
-      return createPath(null);
-    }
-    var path = {};
-    path[startNode] = null;
-    var pathCost = {};
-    pathCost[startNode] = 0;
-    // var border = new BinaryHeap(function (e) {
-    //   return e.score;
-    // });
-    var border = new Queue([], function (a, b) {
-      return b.score - a.score;
-    });
-    border.push({
-      node: startNode,
-      score: 0
-    });
+    var path = new Path();
+    path.start(startNode);
+    var border = new Border();
+    border.push(startNode);
     var currentNode = null, nextNode = null, adjacentNodes = null;
     var newCost = 0;
     while (border.length() > 0) {
       currentNode = border.pop();
       if (currentNode === endNode) {
-        return createPath(path, startNode, endNode);
+        return path.export(endNode);
       }
       adjacentNodes = graph.getAdjacentNodes(currentNode);
-      for (var i = 0; i < neighbors.length; i++) {
+      for (var i = 0; i < adjacentNodes.length; i++) {
         nextNode = adjacentNodes[i];
-        newCost = pathCost[currentNode] + graph.getCost(currentNode, nextNode);
-        if (!path.hasOwnProperty(nextNode) || newCost < pathCost[nextNode]) {
-          path[nextNode] = currentNode;
-          pathCost[nextNode] = newCost
-          border.push({
-            node: nextNode,
-            score: newCost + heuristic(nextNode, endNode)
-          });
+        newCost = path.cost(currentNode) + graph.getCost(currentNode, nextNode);
+        if (!path.contains(nextNode) || newCost < path.cost(nextNode)) {
+          var h = heuristic(nextNode, endNode);
+          path.link(currentNode, nextNode, newCost);
+          border.push(nextNode, newCost + h);
         }
       }
     }
-    return createPath(path, startNode, currentNode);
+    return path.export(currentNode);
   };
 
-  /**
-   * Export the result of the pathfinding algorithm
-   * by travelling backward thgough all nodes in the shortest path
-   *
-   * @param start The start node
-   * @param end The end node
-   */
-  function createPath(path, start, end) {
-    var result = new Array(0);
-    if (path == null) {
-      return result;
-    }
-    var node = end;
-    while (node !== start) {
-      result.push(node);
-      node = path[node];
-    }
-    result.push(start);
-    result.reverse();
-    return result;
-  }
 
   /**
-   * Public API
+   * Public API definition
    */
 
   var Pathfinder = {

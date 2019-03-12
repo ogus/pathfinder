@@ -13,8 +13,7 @@
     grid: null,
     startCell: null,
     endCell: null,
-    tileSize: 40,
-    debug: false
+    tileSize: 40
   };
 
   var Mouse = {
@@ -53,12 +52,6 @@
       });
     }
 
-    for (var i = 0; i < DOM.toolInputs.length; i++) {
-      DOM.toolInputs[i].addEventListener("change", function(e) {
-        Config.toolTile = parseInt(e.target.value);
-      });
-    }
-
     DOM.canvas.addEventListener("mousemove", mouseMove);
     DOM.canvas.addEventListener("mousedown", mouseDown);
     DOM.canvas.addEventListener("mouseup", mouseUp);
@@ -68,7 +61,8 @@
   function initEnvironment() {
     ENV.ctx = DOM.canvas.getContext("2d");
     var rows = 10, columns = 12;
-    ENV.grid = createGrid(10, 12);
+    ENV.grid = createGrid(rows, columns);
+
     ENV.startCell = {
       row: Math.floor(Math.random() * rows),
       column: Math.floor(Math.random() * columns)
@@ -113,7 +107,7 @@
     return grid;
   }
 
-  function gridToGraph(grid) {
+  function getGraphFromGrid() {
     var rows = ENV.grid.length, columns = ENV.grid[0].length;
     var graph = new Pathfinder.Graph();
     for (var r = 0; r < rows; r++) {
@@ -151,7 +145,7 @@
 
   function computePath() {
     var searchMethod = getMethodInput();
-    var graph = gridToGraph();
+    var graph = getGraphFromGrid();
     var startNode = graph.get(function (node) {
       return node.column == ENV.startCell.column && node.row == ENV.startCell.row;
     });
@@ -179,7 +173,7 @@
   }
 
   /**
-   * Canvas Drawing
+   * Canvas drawing methods
    */
 
   function drawResult(result) {
@@ -246,7 +240,7 @@
   }
 
   /**
-   * Event Listener
+   * Mouse event listener
    */
 
   function mouseDown(e) {
@@ -261,8 +255,8 @@
       Mouse.currentValue = 'end';
     }
     else {
-      Mouse.currentValue = getToolInput();
-      ENV.grid[cell.row][cell.column] = Mouse.currentValue;
+      Mouse.currentValue = parseInt(getToolInput());
+      ENV.grid[cell.row][cell.column] = createTile(cell.row, cell.column, Mouse.currentValue);
     }
     Mouse.clicking = true;
     computePath();
@@ -282,7 +276,7 @@
           ENV.endCell = cell;
         }
         else {
-          ENV.grid[cell.row][cell.column] = Mouse.currentValue;
+          ENV.grid[cell.row][cell.column] = createTile(cell.row, cell.column, Mouse.currentValue);
         }
         computePath();
       }
