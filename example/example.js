@@ -13,7 +13,7 @@
     grid: null,
     startCell: null,
     endCell: null,
-    tileSize: 30,
+    tileSize: 40,
     debug: false
   };
 
@@ -175,13 +175,18 @@
         break;
     }
     console.log(result);
-    drawGrid();
-    drawPath(result);
+    drawResult(result);
   }
 
   /**
    * Canvas Drawing
    */
+
+  function drawResult(result) {
+    drawGrid();
+    drawPath(result);
+    drawStartEndCell();
+  }
 
   function drawGrid() {
     var rows = ENV.grid.length, columns = ENV.grid[0].length;
@@ -192,12 +197,11 @@
         x = c * tileSize; y = r * tileSize;
         ENV.ctx.drawImage(DOM.tileset, ENV.grid[r][c].value*64,0, 64,64, x,y, tileSize,tileSize);
         ENV.ctx.drawImage(DOM.tileset, ENV.grid[r][c].value*64,0, 64,64, x,y, tileSize,tileSize);
-        // if (ENV.grid[r][c] == ENV.startNode) {
+
         if (r == ENV.startCell.row && c == ENV.startCell.column) {
           ENV.ctx.drawImage(DOM.tileset, 3*64,0, 64,64, x,y, tileSize,tileSize);
           ENV.ctx.drawImage(DOM.tileset, 3*64,0, 64,64, x,y, tileSize,tileSize);
         }
-        // if (ENV.grid[r][c] == ENV.endNode) {
         if (r == ENV.endCell.row && c == ENV.endCell.column) {
           ENV.ctx.drawImage(DOM.tileset, 4*64,0, 64,64, x,y, tileSize,tileSize);
           ENV.ctx.drawImage(DOM.tileset, 4*64,0, 64,64, x,y, tileSize,tileSize);
@@ -206,10 +210,24 @@
     }
   }
 
+  function drawStartEndCell() {
+    var size = ENV.tileSize;
+    var x = 0, y = 0;
+
+    x = size * ENV.startCell.column;
+    y = size * ENV.startCell.row;
+    ENV.ctx.drawImage(DOM.tileset, 3*64,0, 64,64, x,y, size,size);
+    ENV.ctx.drawImage(DOM.tileset, 3*64,0, 64,64, x,y, size,size);
+
+    x = size * ENV.endCell.column;
+    y = size * ENV.endCell.row;
+    ENV.ctx.drawImage(DOM.tileset, 4*64,0, 64,64, x,y, size,size);
+    ENV.ctx.drawImage(DOM.tileset, 4*64,0, 64,64, x,y, size,size);
+  }
+
   function drawPath(path) {
     if(path.length == 0) return;
 
-    ENV.ctx.lineWidth = 10;
     ENV.ctx.lineWidth = 10;
     ENV.ctx.strokeStyle = "rgba(190,170,135,0.8)";
     ENV.ctx.lineJoin = "round";

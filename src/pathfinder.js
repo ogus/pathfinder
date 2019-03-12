@@ -5,7 +5,7 @@
 }(this, function () {
   'use strict';
 
-  function Queue(data, compare) {
+  var Queue = function (data, compare) {
     this.data = (typeof data !== 'undefined') ? data : [];
     this.compare = (typeof compare == 'function') ? compare : function (a, b) {
       return b - a;
@@ -151,8 +151,47 @@
   //   }
   // };
 
+  var Path = function (startNode) {
+    this.nodes = [];
+    this.links = {};
+  }
 
-  function Graph() {
+  Path.prototype = {
+    init: function (startNode) {
+      this.nodes.push(startNode);
+      this.links[0] = null;
+    },
+
+    link: function (currentNode, nextNode) {
+      if (!this.contains(currentNode)) {
+        this.nodes.push(currentNode);
+      }
+      if (!this.contains(nextNode)) {
+        this.nodes.push(nextNode);
+      }
+      this.links[this.nodes.indexOf(nextNode)] = this.nodes.indexOf(currentNode);
+    },
+
+    contains: function (node) {
+      return this.nodes.indexOf(node) > -1;
+    },
+
+    export: function (endNode) {
+      var result = [];
+      if (typeof endNode != 'undefined') {
+        var nodeId = this.nodes.indexOf(endNode);
+        while (nodeId > 0) {
+          result.push(this.nodes[nodeId]);
+          nodeId = this.links[nodeId];
+        }
+      }
+      result.push(this.nodes[0]);
+      result.reverse();
+      return result;
+    }
+  }
+
+  var Graph = function () {
     this.nodes = [];
     this.edges = {};
   }
@@ -209,7 +248,7 @@
 
     getAdjacentNodes: function (node) {
       if (this.hasNode(node)) {
-        var nodeId = this.getNodeId(node)
+        var nodeId = this.getNodeId(node);
         var adjacentId = Object.keys(this.edges[nodeId]);
         var adjacentNodes = [];
         for (var i = 0; i < adjacentId.length; i++) {
@@ -238,29 +277,29 @@
    * @param endNode A node from the graph
    */
   function bfs(graph, startNode, endNode) {
+    var path = new Path();
+    var border = new Array();
     if (!startNode || !endNode) {
-      return createPath(null);
+      return path.export();
     }
-    var path = {};
-    path[startNode] = null;
-    var border = [];
+    path.init(startNode);
     border.push(startNode);
     var currentNode = null, nextNode = null, adjacentNodes = null;
     while (border.length > 0) {
       currentNode = border.shift();
       if (currentNode === endNode) {
-        return createPath(path, startNode, endNode);
+        return path.export(endNode);
       }
       adjacentNodes = graph.getAdjacentNodes(currentNode);
       for (var i = 0; i < adjacentNodes.length; i++) {
         nextNode = adjacentNodes[i];
-        if (!path.hasOwnProperty(nextNode)) {
-          path[nextNode] = currentNode;
+        if (!path.contains(nextNode)) {
+          path.link(currentNode, nextNode);
           border.push(nextNode);
         }
       }
     }
-    return createPath(path, startNode, currentNode);
+    return path.export(currentNode);
   };
 
   /**
